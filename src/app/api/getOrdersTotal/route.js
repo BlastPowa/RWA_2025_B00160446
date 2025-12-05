@@ -21,7 +21,9 @@ export async function GET() {
     total += Number(record.total || 0)
   })
 
+  const count = orders.length
+
   await client.close()
 
-  return Response.json({ total })
+  return Response.json({ total, count })
 }
