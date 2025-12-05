@@ -12,8 +12,7 @@ import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
-import NextLink from 'next/link'
-import Link from '@mui/material/Link'
+import Link from 'next/link'
 import Alert from '@mui/material/Alert'
 
 export default function CustomerPage() {
@@ -43,9 +42,7 @@ export default function CustomerPage() {
             `Temp: ${data.current_weather.temperature}°C, Wind: ${data.current_weather.windspeed} km/h`
           )
         }
-      } catch (e) {
-        setWeather('')
-      }
+      } catch {}
     }
 
     loadProducts()
@@ -68,15 +65,10 @@ export default function CustomerPage() {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             McDonald&apos;s Orders
           </Typography>
-          <Link
-            component={NextLink}
-            href="/cart"
-            color="inherit"
-            sx={{ mr: 2 }}
-          >
+          <Link href="/cart" style={{ color: 'white', marginRight: 16 }}>
             Cart
           </Link>
-          <Link component={NextLink} href="/checkout" color="inherit">
+          <Link href="/checkout" style={{ color: 'white' }}>
             Checkout
           </Link>
         </Toolbar>
@@ -96,18 +88,38 @@ export default function CustomerPage() {
         )}
         <Grid container spacing={3}>
           {products.map(p => (
-            <Grid item xs={12} sm={6} md={4} key={p._id}>
-              <Card>
-                {p.image && (
-                  <CardMedia
-                    component="img"
-                    height="160"
-                    image={p.image}
-                    alt={p.pname}
-                  />
+            <Grid item xs={12} sm={6} md={3} key={p._id}>
+              <Card
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                {p.imageUrl && (
+                  <Box
+                    sx={{
+                      height: 180,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      p: 2,
+                    }}
+                  >
+                    <CardMedia
+                      component="img"
+                      sx={{
+                        maxHeight: '100%',
+                        width: 'auto',
+                        objectFit: 'contain',
+                      }}
+                      image={p.imageUrl}
+                      alt={p.pname}
+                    />
+                  </Box>
                 )}
-                <CardContent>
-                  <Typography gutterBottom variant="h6" component="div">
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography gutterBottom variant="h6">
                     {p.pname}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -124,7 +136,7 @@ export default function CustomerPage() {
                     fullWidth
                     onClick={() => putInCart(p.pname, p.price)}
                   >
-                    Add to cart
+                    ADD TO CART
                   </Button>
                 </CardActions>
               </Card>

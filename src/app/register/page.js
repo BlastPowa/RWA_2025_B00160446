@@ -1,147 +1,142 @@
 'use client'
 
-import * as React from 'react'
+import React, { useState } from 'react'
 import Container from '@mui/material/Container'
 import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
+import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
-import Grid from '@mui/material/Grid'
-import NextLink from 'next/link'
-import Link from '@mui/material/Link'
+import Link from 'next/link'
 import Alert from '@mui/material/Alert'
 
 export default function RegisterPage() {
-  const [loading, setLoading] = React.useState(false)
-  const [error, setError] = React.useState('')
+  const [email, setEmail] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
 
-  async function handleSubmit(event) {
-    event.preventDefault()
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setMessage('')
     setError('')
-    setLoading(true)
 
-    const data = new FormData(event.currentTarget)
-    const email = data.get('email')
-    const password = data.get('password')
-    const confirmPassword = data.get('confirmPassword')
-    const phoneNumber = data.get('phoneNumber')
-
-    if (!email || !password || !confirmPassword || !phoneNumber) {
-      setError('All fields are required.')
-      setLoading(false)
+    if (!email || !phoneNumber || !password || !confirmPassword) {
+      setError('Please fill in all fields.')
       return
     }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match.')
-      setLoading(false)
       return
     }
 
-    const url = `/api/register?email=${encodeURIComponent(
-      email
-    )}&password=${encodeURIComponent(
-      password
-    )}&confirmPassword=${encodeURIComponent(
-      confirmPassword
-    )}&phoneNumber=${encodeURIComponent(phoneNumber)}`
+    const res = await fetch(
+      `/api/register?email=${encodeURIComponent(
+        email
+      )}&password=${encodeURIComponent(
+        password
+      )}&confirmPassword=${encodeURIComponent(
+        confirmPassword
+      )}&phoneNumber=${encodeURIComponent(phoneNumber)}`
+    )
 
-    try {
-      const res = await fetch(url)
-      const json = await res.json()
-      if (json.data === 'valid') {
+    const json = await res.json()
+
+    if (json.data === 'valid') {
+      setMessage('Account created. Redirecting to login...')
+      setTimeout(() => {
         window.location.href = '/login'
-      } else {
-        setError(json.error || 'Registration failed.')
-      }
-    } catch (e) {
-      setError('Network error.')
-    } finally {
-      setLoading(false)
+      }, 1000)
+    } else {
+      setError(json.error || 'Registration failed.')
     }
   }
 
   return (
-    <Container component="main" maxWidth="xs">
+    <Container
+      maxWidth="sm"
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       <Box
+        component="form"
+        onSubmit={handleSubmit}
         sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          width: '100%',
+          p: 4,
+          boxShadow: 3,
+          borderRadius: 2,
+          bgcolor: 'background.paper',
         }}
       >
-        <Typography component="h1" variant="h5">
+        <Typography variant="h4" align="center" gutterBottom>
           McDonald&apos;s Account Register
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                id="email"
-                label="Email Address"
-                name="email"
-                type="email"
-                autoComplete="email"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                name="phoneNumber"
-                label="Phone Number"
-                id="phoneNumber"
-                autoComplete="tel"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                autoComplete="new-password"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                name="confirmPassword"
-                label="Confirm Password"
-                type="password"
-                id="confirmPassword"
-                autoComplete="new-password"
-              />
-            </Grid>
-          </Grid>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+        {message && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            {message}
+          </Alert>
+        )}
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+          <TextField
+            label="Email Address *"
+            type="email"
+            fullWidth
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+          />
+          <TextField
+            label="Phone Number *"
+            fullWidth
+            value={phoneNumber}
+            onChange={e => setPhoneNumber(e.target.value)}
+          />
+          <TextField
+            label="Password *"
+            type="password"
+            fullWidth
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+          />
+          <TextField
+            label="Confirm Password *"
+            type="password"
+            fullWidth
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+          />
+
           <Button
             type="submit"
-            fullWidth
             variant="contained"
-            disabled={loading}
-            sx={{ mt: 3, mb: 2 }}
+            fullWidth
+            sx={{ mt: 1, py: 1.2 }}
           >
-            {loading ? 'Registering...' : 'Register'}
+            REGISTER
           </Button>
-          <Grid container justifyContent="flex-end">
-            <Grid item>
-              <Link component={NextLink} href="/login" variant="body2">
-                Already have an account? Login
-              </Link>
-            </Grid>
-          </Grid>
         </Box>
+
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ mt: 2 }}
+        >
+          Already have an account?{' '}
+          <Link href="/login">Login</Link>
+        </Typography>
       </Box>
     </Container>
   )
