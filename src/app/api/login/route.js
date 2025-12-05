@@ -1,88 +1,59 @@
-export async function GET(req, res) {
+import { MongoClient } from "mongodb";
+import bcrypt from "bcrypt";
 
+const url = "mongodb+srv://Ghxst:pass@cluster0.xxwvnlb.mongodb.net/?appName=Cluster0";
+const dbName = "app";
 
-  // Make a note we are on
+export async function GET(req) {
+  console.log("in the login api page");
 
-  // the api. This goes to the console.
+  const { searchParams } = new URL(req.url);
+  const email = searchParams.get("email");
+  const password = searchParams.get("password");
 
-  console.log("in the api page")
+  console.log("email:", email);
+  console.log("password:", password);
 
-
-
-  // get the values
-
-  // that were sent across to us.
-
-  const { searchParams } = new URL(req.url)
-
-  const email = searchParams.get('email')
-
-  const pass = searchParams.get('pass')
-
-
-  console.log(email);
-
-  console.log(pass);
-
-
-
- // =================================================
-
-  const { MongoClient } = require('mongodb');
-
-
-  const url = 'mongodb+srv://Ghxst:<sololevelings2.dbUserPassword>@cluster0.xxwvnlb.mongodb.net/?appName=Cluster0';
+  if (!email || !password) {
+    return Response.json(
+      { data: "invalid", error: "Missing email or password" },
+      { status: 400 }
+    );
+  }
 
   const client = new MongoClient(url);
 
- 
+  try {
+    await client.connect();
+    console.log("Connected successfully to login");
 
- 
+    const db = client.db(dbName);
+    const collection = db.collection("login");
 
-  const dbName = 'app'; // database name
+    const user = await collection.findOne({ email: email });
 
+    if (!user) {
+      console.log("user not found");
+      return Response.json({ data: "invalid" });
+    }
 
-  await client.connect();
+    const hashResult = bcrypt.compareSync(password, user.password);
+    console.log("Hash Comparison Result:", hashResult);
 
-  console.log('Connected successfully to server');
+    if (!hashResult) {
+      console.log("wrong password");
+      return Response.json({ data: "invalid" });
+    }
 
-  const db = client.db(dbName);
-
-  const collection = db.collection('login'); // collection name
-
-
-
-  const findResult = await collection.find({"username": email}).toArray();
-
-  console.log('Found documents =>', findResult);
-
-
-  let valid = false
-
-  if(findResult.length >0 ){
-
-          valid = true;
-
-          console.log("login valid")
-
-  } else {
-
-
-        valid = false;
-
-        console.log("login invalid")
-
+    console.log("login valid");
+    return Response.json({
+      data: "valid",
+      account_type: user.account_type || "customer"
+    });
+  } catch (err) {
+    console.error("login api error:", err);
+    return Response.json({ data: "invalid", error: "db error" }, { status: 500 });
+  } finally {
+    await client.close();
   }
-
-
-
- //==========================================================
-
-
-
-
-  // at the end of the process we need to send something back.
-
-  return Response.json({ "data":"" + valid + ""})
-
 }
