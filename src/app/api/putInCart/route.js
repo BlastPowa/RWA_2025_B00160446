@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb'
 
-const url = 'mongodb+srv://Ghxst:pass@cluster0.xxwvnlb.mongodb.net/app?retryWrites=true&w=majority&appName=Cluster0'
+const url = "mongodb+srv://Ghxst:pass@cluster0.xxwvnlb.mongodb.net/?appName=Cluster0";
 const dbName = 'app'
 
 export async function GET(req) {
@@ -36,7 +36,7 @@ export async function GET(req) {
     price: product.price,
     description: product.description,
     image: product.image,
-    username: 'sample@test.com'
+    username: 'sample@test.com',
     added_at: new Date(),
   }
 
