@@ -1,149 +1,157 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import AppBar from '@mui/material/AppBar'
-import Toolbar from '@mui/material/Toolbar'
-import Typography from '@mui/material/Typography'
-import Container from '@mui/material/Container'
-import Grid from '@mui/material/Grid'
-import Card from '@mui/material/Card'
-import CardMedia from '@mui/material/CardMedia'
-import CardContent from '@mui/material/CardContent'
-import CardActions from '@mui/material/CardActions'
-import Button from '@mui/material/Button'
-import Box from '@mui/material/Box'
-import Link from 'next/link'
-import Alert from '@mui/material/Alert'
+import * as React from 'react';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import IconButton from '@mui/material/IconButton';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import NextLink from 'next/link';
+
+function putInCart(pname) {
+  console.log("putting in cart: " + pname)
+  fetch(`/api/putInCart?pname=${encodeURIComponent(pname)}`)
+}
 
 export default function CustomerPage() {
-  const [products, setProducts] = useState([])
-  const [weather, setWeather] = useState('')
-  const [message, setMessage] = useState('')
+  const [products, setProducts] = useState(null)
+  const [weather, setWeather] = useState(null)
 
   useEffect(() => {
-    async function loadProducts() {
-      try {
-        const res = await fetch('/api/products')
-        const json = await res.json()
-        setProducts(json.products || [])
-      } catch (e) {
-        setMessage('Could not load products.')
-      }
-    }
-
-    async function loadWeather() {
-      try {
-        const res = await fetch(
-          'https://api.open-meteo.com/v1/forecast?latitude=53.35&longitude=-6.26&current_weather=true'
-        )
-        const data = await res.json()
-        if (data.current_weather) {
-          setWeather(
-            `Temp: ${data.current_weather.temperature}°C, Wind: ${data.current_weather.windspeed} km/h`
-          )
-        }
-      } catch {}
-    }
-
-    loadProducts()
-    loadWeather()
+    fetch('/api/products')
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
   }, [])
 
-  function putInCart(pname, price) {
-    setMessage('')
-    fetch(
-      `/api/putInCart?pname=${encodeURIComponent(
-        pname
-      )}&price=${encodeURIComponent(price)}`
-    ).then(() => setMessage('Item added to cart.'))
-  }
+  useEffect(() => {
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=53.3331&longitude=-6.2489&hourly=temperature_2m,wind_speed_10m,relative_humidity_2m&timezone=auto")
+      .then((res) => res.json())
+      .then((data) => {
+        setWeather({
+          temperature: data.hourly.temperature_2m[0],
+          wind: data.hourly.wind_speed_10m[0],
+          humidity: data.hourly.relative_humidity_2m[0]
+        })
+      })
+  }, [])
+
+  if (!products) return <p>Loading...</p>
 
   return (
-    <>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            McDonald&apos;s Orders
-          </Typography>
-          <Link href="/cart" style={{ color: 'white', marginRight: 16 }}>
-            Cart
-          </Link>
-          <Link href="/checkout" style={{ color: 'white' }}>
-            Checkout
-          </Link>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5'}}>
+      
+      <AppBar position="static" color="default" elevation={1}>
+        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', px: 3}}>
+          
+          <Stack direction="row" spacing={1} alignItems="center">
+            <NextLink href="/customer">
+              <Image src="/images/mcdonalds.png" width={45} height={45} alt="McDonalds logo" style={{ cursor: "pointer"}} />
+            </NextLink>
+            <Typography variant="h5" sx={{ color: 'red', fontWeight: 'bold'}}>
+              McDONALDS
+            </Typography>
+          </Stack>
+
+          <Stack direction="row" spacing={2} alignItems="center">
+            <IconButton component={NextLink} href="/cart" size="large">
+              <ShoppingCartIcon />
+            </IconButton>
+
+            <Avatar
+              alt="Profile"
+              sx={{ width: 45, height: 45, cursor: "pointer"}}
+            />
+          </Stack>
+
         </Toolbar>
       </AppBar>
-      <Container sx={{ mt: 4, mb: 4 }}>
+
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+
         {weather && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle1">
-              Current weather: {weather}
+          <Box
+            sx={{
+              p: 2,
+              mb: 3,
+              bgcolor: "white",
+              borderRadius: 2,
+              boxShadow: 1,
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            <Typography variant="body1">
+              Weather: <strong>{weather.temperature}°C</strong> | Wind {weather.wind} km/h | Humidity {weather.humidity}%
             </Typography>
           </Box>
         )}
-        {message && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {message}
-          </Alert>
-        )}
-        <Grid container spacing={3}>
-          {products.map(p => (
-            <Grid item xs={12} sm={6} md={3} key={p._id}>
-              <Card
-                sx={{
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}
-              >
-                {p.imageUrl && (
-                  <Box
-                    sx={{
-                      height: 180,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      p: 2,
-                    }}
-                  >
-                    <CardMedia
-                      component="img"
-                      sx={{
-                        maxHeight: '100%',
-                        width: 'auto',
+
+        <Grid container spacing={4} justifyContent="center" alignItems="flex-start">
+
+          {products.map((item, i) => (
+            <Grid item key={i} xs={12} sm={6} md={4} lg={3}>
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', textAlign: "center", borderRadius: "12px", boxShadow: 2 }}>
+
+                {item.image && (
+                  <CardMedia sx={{ position: 'relative', height: 180 }}>
+                    <Image
+                      src={item.image}
+                      alt={item.pname}
+                      fill
+                      style={{
                         objectFit: 'contain',
+                        padding: "10px",
                       }}
-                      image={p.imageUrl}
-                      alt={p.pname}
                     />
-                  </Box>
+                  </CardMedia>
                 )}
+
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography gutterBottom variant="h6">
-                    {p.pname}
+                    {item.pname}
                   </Typography>
+
                   <Typography variant="body2" color="text.secondary">
-                    {p.description}
+                    {item.description}
                   </Typography>
-                  <Typography variant="subtitle1" sx={{ mt: 1 }}>
-                    €{p.price}
+
+                  <Typography sx={{ mt: 1, fontWeight: "bold", fontSize: "18px" }}>
+                    €{item.price}
                   </Typography>
                 </CardContent>
-                <CardActions>
+
+                <CardActions sx={{ p: 2 }}>
                   <Button
-                    size="small"
-                    variant="contained"
                     fullWidth
-                    onClick={() => putInCart(p.pname, p.price)}
+                    variant="outlined"
+                    onClick={() => putInCart(item.pname)}
+                    sx={{ fontWeight: "bold" }}
                   >
                     ADD TO CART
                   </Button>
                 </CardActions>
+
               </Card>
             </Grid>
           ))}
+
         </Grid>
       </Container>
-    </>
+    </Box>
   )
 }
