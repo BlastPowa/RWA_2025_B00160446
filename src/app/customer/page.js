@@ -18,7 +18,6 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import NextLink from 'next/link';
 
 function putInCart(pname) {
@@ -58,7 +57,13 @@ export default function CustomerPage() {
           
           <Stack direction="row" spacing={1} alignItems="center">
             <NextLink href="/customer">
-              <Image src="/images/mcdonalds.png" width={45} height={45} alt="McDonalds logo" style={{ cursor: "pointer"}} />
+              <Image
+                src="/images/mcdonalds.png"
+                width={45}
+                height={45}
+                alt="McDonalds logo"
+                style={{ cursor: "pointer"}}
+              />
             </NextLink>
             <Typography variant="h5" sx={{ color: 'red', fontWeight: 'bold'}}>
               McDONALDS
@@ -66,9 +71,14 @@ export default function CustomerPage() {
           </Stack>
 
           <Stack direction="row" spacing={2} alignItems="center">
-            <IconButton component={NextLink} href="/cart" size="large">
-              <ShoppingCartIcon />
-            </IconButton>
+            <Button
+              component={NextLink}
+              href="/cart"
+              variant="outlined"
+              sx={{ fontWeight: 'bold' }}
+            >
+              Cart
+            </Button>
 
             <Avatar
               alt="Profile"
@@ -105,7 +115,16 @@ export default function CustomerPage() {
 
           {products.map((item, i) => (
             <Grid item key={i} xs={12} sm={6} md={4} lg={3}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', textAlign: "center", borderRadius: "12px", boxShadow: 2 }}>
+              <Card
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  textAlign: "center",
+                  borderRadius: "12px",
+                  boxShadow: 2
+                }}
+              >
 
                 {item.image && (
                   <CardMedia sx={{ position: 'relative', height: 180 }}>
